@@ -1,0 +1,1 @@
+A package is like a box and a box is like a cube.
