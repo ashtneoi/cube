@@ -6,17 +6,14 @@ stage="$3"
 out="$4"
 config="$5"
 
-if [[ -z "$stage" ]]; then
-    echo >&2 "Error: \$stage is empty"
-    exit 100
-fi
+[[ -z "$cube" ]] && { echo >&2 "Error: \$cube"; exit 100; }
 
 # These are relative to the cube dir.
 while IFS= read -r assignment; do
-    declare "$assignment"
-done < <(sed -En 's:^i ([^ ]+) (.*):\1=\2:p' "$rec")
+    declare -- "$assignment"
+done < <(sed -En -- 's:^i ([^ ]+) (.*):\1=\2:p' "$rec")
 
-threads="$(sed -En 's:^threads (.*):\1:p' "$config")"
+threads="$(sed -En -- 's:^threads (.*):\1:p' "$config")"
 
 tar -xf "$cube/$src/hello-2.12.tar.gz"
 mkdir build
@@ -31,5 +28,7 @@ if [[ -e "$stage/_$cube/$out/_" ]]; then
     echo >&2 "Error: '$stage/_$cube/$out/_' would clobber '$stage/_'"
     exit 100
 fi
-find "$stage/_$cube/$out/" -mindepth 1 -maxdepth 1 -exec mv {} "$stage" \;
-rm -r "$stage/_"
+[[ "$stage" == *- ]] && { echo >&2 "Error: \$stage"; exit 100; }
+find "$stage/_$cube/$out/" -mindepth 1 -maxdepth 1 -exec mv -- {} "$stage" \;
+[[ -z "$stage" ]] && { echo >&2 "Error: \$stage"; exit 100; }
+rm -r -- "$stage/_"
