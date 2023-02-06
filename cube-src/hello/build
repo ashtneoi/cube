@@ -1,0 +1,35 @@
+set -eu
+
+rec="$1"
+cube="$2"
+stage="$3"
+out="$4"
+config="$5"
+
+if [[ -z "$stage" ]]; then
+    echo >&2 "Error: \$stage is empty"
+    exit 100
+fi
+
+# These are relative to the cube dir.
+while IFS= read -r assignment; do
+    declare "$assignment"
+done < <(sed -En 's:^i ([^ ]+) (.*):\1=\2:p' "$rec")
+
+threads="$(sed -En 's:^threads (.*):\1:p' "$config")"
+
+tar -xf "$cube/$src/hello-2.12.tar.gz"
+mkdir build
+cd build
+../hello-2.12/configure --prefix="$cube/$out"
+make -j"$threads"
+make -j"$threads" install DESTDIR="$stage/_"
+# We'll end up with files in $stage/_$cube/$out/, for reasons. Note that $cube begins with a slash.
+
+if [[ -e "$stage/_$cube/$out/_" ]]; then
+    # That file will clobber "$stage/_". No easy and predictable way to work around it.
+    echo >&2 "Error: '$stage/_$cube/$out/_' would clobber '$stage/_'"
+    exit 100
+fi
+find "$stage/_$cube/$out/" -mindepth 1 -maxdepth 1 -exec mv {} "$stage" \;
+rm -r "$stage/_"
