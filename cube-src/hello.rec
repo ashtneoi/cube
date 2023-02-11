@@ -1,6 +1,0 @@
-i gcc impure/gcc-12.2
-i core impure/coreutils-x.y
-i tar impure/tar-x.y
-i src impure/hello-2.12-src
-i bash impure/bash-x.y
-b bash bin/bash
