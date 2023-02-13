@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -eu
+
+cube="${1:?Error: no cube}"
+[[ "$cube" != */ ]] && { echo >&2 "Error: cube doesn't end in a slash"; exit 100; }
+
+file="${2:?Error: no file}"
+
+mkdir -p -- "${cube}_/tmp"
+T="$(mktemp -d -p"${cube}_/tmp")"
+: ${T:?Error: no T}
+echo "Temporary directory: $T"
+
+cp -- "$file" "$T"
+dest="$(nar "$T" | sha3-256sum -b | base24 -p)"
+: ${dest:?Error: no dest}
+
+mkdir -p -- "${cube}$(dirname "$dest")"
+mv -T -- "$T" "${cube}$dest"
