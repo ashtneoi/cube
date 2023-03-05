@@ -1,0 +1,34 @@
+mkdir -p -- "${cube}_impure/ruby-3.2.1-rpath"
+ln -s -- "${cube}_impure/libyaml-0.2.5/lib/libyaml-0.so.2" "${cube}_impure/ruby-3.2.1-rpath/"
+
+tar -xf "${cube}kk/8wmk2dwptcczmdjvzxsntbnckpj8dnd8rsdjbv/ruby-3.2.1.tar.gz"
+mkdir build
+cd build
+#../ruby-3.2.1/configure --prefix="${cube}_impure/ruby-3.2.1" --disable-install-doc --disable-rubygems --without-git ac_cv_lib_crypt_crypt=no
+#../ruby-3.2.1/configure --prefix="${cube}_impure/ruby-3.2.1" --disable-install-doc --disable-rubygems --without-git CFLAGS=-I"${cube}_impure/libyaml-0.2.5/include" LDFLAGS=-L"${cube}_impure/libyaml-0.2.5/lib" ac_cv_lib_crypt_crypt=no
+#../ruby-3.2.1/configure --prefix="${cube}_impure/ruby-3.2.1" --disable-install-doc --disable-rubygems --without-git --without-baseruby --with-out-ext=cgi --with-out-ext=continuation --with-out-ext=etc --with-out-ext=fiddle --with-out-ext=json --with-out-ext=openssl --with-out-ext=racc --with-out-ext=readline --with-out-ext=syslog --with-out-ext=win32 --with-out-ext=win32ole --with-out-ext=zlib
+../ruby-3.2.1/configure --prefix="${cube}_impure/ruby-3.2.1" --disable-install-doc --without-git --without-baseruby --with-out-ext=fiddle --with-out-ext=openssl --with-out-ext=readline --with-out-ext=win32 --with-out-ext=win32ole --with-out-ext=zlib CFLAGS=-I"${cube}_impure/libyaml-0.2.5/include" LDFLAGS="-L${cube}_impure/libyaml-0.2.5/lib -Wl,-rpath=${cube}_impure/ruby-3.2.1-rpath"
+make
+make install
+
+stuff to force configure script not to detect?
+- libffi
+- openssl
+- readline
+- libedit
+- zlib
+
+problem: `make install` requires a working ruby with a working psych module. psych.so depends on libyaml-0.so.2. i don't want to inflate binaries by adding a bunch of DT_RPATH/DT_RUNPATH entries, one for each dependency; i'd prefer to have a single directory that symlinks to all of the dependencies and a single DT_RPATH/DT_RUNPATH entry for that single directory. but then the libyaml-0.so.2 symlink would have to be in the cube dir before we can run `make install`, which prevents us from installing to a staging directory.
+
+we could have that runpath directory be a separate package, but that would be really annoying at scale.
+
+options:
+1. add a separate package just for Ruby's runpath, and make it a dependency of the main Ruby package.
+2. reimplement `make install` in a way that doesn't depend on the psych module.
+3. eliminate all shared library dependencies except for libc stuff.
+
+can't just remove the rubygems module from the source dir. apparently `make install` requires it. :(
+
+yep, extmk.rb requires rubygems, and extmk.rb seems to be an integral part of `make install`.
+
+1 would be okay. 2 sound too hard. 3 sounds too hard.

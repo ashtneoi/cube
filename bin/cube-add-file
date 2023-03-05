@@ -6,8 +6,8 @@ cube="${1:?Error: no cube}"
 
 file="${2:?Error: no file}"
 
-mkdir -p -- "${cube}_/tmp"
-T="$(mktemp -d -p"${cube}_/tmp")"
+mkdir -p -- "${cube}_tmp"
+T="$(mktemp -d -p"${cube}_tmp")"
 : ${T:?Error: no T}
 echo "Temporary directory: $T"
 
@@ -17,3 +17,4 @@ dest="$(nar "$T" | sha3-256sum -b | base24 -p)"
 
 mkdir -p -- "${cube}$(dirname "$dest")"
 mv -T -- "$T" "${cube}$dest"
+echo "$dest"

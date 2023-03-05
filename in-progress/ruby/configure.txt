@@ -1,0 +1,146 @@
+
+Optional Features:
+  --disable-option-checking  ignore unrecognized --enable/--with options
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-load-relative  resolve load paths at run time
+  --enable-rpath          embed run path into extension libraries. enabled by
+                          default on ELF platforms
+  --enable-devel          enable development build
+  --disable-werror        don't make warnings into errors even if a compiler
+                          support -Werror feature [[disabled by default unless
+                          development version]]
+  --disable-fortify-source
+                          disable -D_FORTIFY_SOURCE=2 option, which causes
+                          link error on mingw
+  --disable-largefile     omit support for large files
+  --enable-mathn          enable canonicalization for mathn
+  --enable-setreuid       use setreuid()/setregid() according to need even if
+                          obsolete
+  --enable-multiarch      enable multiarch compatible directories
+  --enable-shared         build a shared library for Ruby
+  --disable-pie           disable PIE feature
+  --enable-dtrace         enable DTrace for tracing inside ruby. enabled by
+                          default on systems having dtrace
+  --enable-gcov           enable coverage measurement by gcov
+  --disable-install-doc   do not install either rdoc indexes or C API
+                          documents during install
+  --disable-install-rdoc  do not install rdoc indexes during install
+  --disable-install-capi  do not install C API documents during install
+  --disable-jit-support   disable JIT features
+  --enable-yjit           enable in-process JIT compiler that requires Rust
+                          build tools. enabled by default on supported
+                          platforms if rustc 1.58.0+ is available
+  --disable-install-static-library
+                          do not install static ruby library
+  --disable-dln           disable dynamic link feature
+  --enable-debug-env      enable RUBY_DEBUG environment variable
+  --enable-mkmf-verbose   enable verbose in mkmf
+  --disable-rubygems      disable rubygems by default
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-baseruby=RUBY    use RUBY as baseruby; RUBY is the pathname of ruby
+  --without-git           never use git
+  --without-gcc           never use gcc
+  --with-os-version-style=TYPE
+                          OS version number for target and target_os [[full]]
+                          (full|teeny|minor+0|minor|major+0|major|none)
+  --with-arch=ARCHS       build an Apple/NeXT Multi Architecture Binary (MAB);
+                          ARCHS is a comma-delimited list of architectures for
+                          which to build; if this option is disabled or
+                          omitted entirely, then the package will be built
+                          only for the target platform
+  --with-compress-debug-sections=type
+                          enable debug section compression
+  --with-gmp-dir=DIR      specify the prefix directory where gmp is installed
+  --without-gmp           disable GNU GMP to accelerate Bignum operations
+  --with-opt-dir=DIR-LIST add optional headers and libraries directories
+                          separated by $PATH_SEPARATOR
+  --with-winnt-ver=0xXXXX target Windows NT version (default to 0x0600)
+  --with-thread=IMPLEMENTATION
+                          specify the thread implementation to use
+  --with-jemalloc         use jemalloc allocator
+  --with-coroutine=IMPLEMENTATION
+                          specify the coroutine implementation to use
+  --with-dln-a-out        dln_a_out is deprecated
+  --without-mjit-tabs     expand tabs in mjit header
+  --with-static-linked-ext
+                          link external modules statically
+  --without-valgrind      disable valgrind memcheck support
+  --with-ext=EXTS         pass to --with-ext option of extmk.rb
+  --with-out-ext=EXTS     pass to --without-ext option of extmk.rb
+  --with-setup=SETUP      use extension libraries setup
+  --with-rubylibprefix=DIR
+                          prefix for ruby libraries [[LIBDIR/RUBY_BASE_NAME]]
+  --with-soname=SONAME    base name of shared library
+  --with-setjmp-type      select setjmp type
+  --with-rdoc=ri,html     comma/space separated list of RDoc formats to
+                          install
+  --with-rubyarchprefix=DIR
+                          prefix for architecture dependent ruby libraries
+                          [[RUBYLIBPREFIX/ARCH]]
+  --with-rubysitearchprefix=DIR
+                          prefix for architecture dependent site libraries
+                          [[RUBYLIBPREFIX/SITEARCH]]
+  --with-ridir=DIR        ri documentation [[DATAROOTDIR/ri]]
+  --with-ruby-version=STR ruby version string for version specific directories
+                          [[full]] (full|minor|STR)
+  --with-sitedir=DIR      site libraries in DIR [[RUBY_LIB_PREFIX/site_ruby]],
+                          "no" to disable site directory
+  --with-sitearchdir=DIR  architecture dependent site libraries in DIR
+                          [[SITEDIR/SITEARCH]], "no" to disable site directory
+  --with-vendordir=DIR    vendor libraries in DIR
+                          [[RUBY_LIB_PREFIX/vendor_ruby]], "no" to disable
+                          vendor directory
+  --with-vendorarchdir=DIR
+                          architecture dependent vendor libraries in DIR
+                          [[VENDORDIR/SITEARCH]], "no" to disable vendor
+                          directory
+  --with-search-path=DIR  specify the additional search path
+  --with-rubyhdrdir=DIR   core headers in DIR
+                          [[INCLUDEDIR/RUBY_BASE_NAME-RUBY_VERSION]]
+  --with-rubyarchhdrdir=DIR
+                          architecture dependent core headers in DIR
+                          [[$(rubyhdrdir)/$(arch)]]
+  --with-sitehdrdir=DIR   core site headers in DIR [[RUBYHDRDIR/site_ruby]]
+  --with-sitearchhdrdir=DIR
+                          architecture dependent core site headers in DIR
+                          [[RUBYHDRDIR/site_ruby]]
+  --with-vendorhdrdir=DIR core vendor headers in DIR
+                          [[RUBYHDRDIR/vendor_ruby]]
+  --with-vendorarchhdrdir=DIR
+                          architecture dependent core vendor headers in DIR
+                          [[RUBYHDRDIR/vendor_ruby]]
+  --with-mantype=TYPE     specify man page type; TYPE is one of man and doc
+  --with-ruby-pc=FILENAME pc file basename
+  --with-destdir=DESTDIR  specify default directory to install
+
+Some influential environment variables:
+  cflags      additional CFLAGS (ignored when CFLAGS is given)
+  cppflags    additional CPPFLAGS (ignored when CPPFLAGS is given)
+  cxxflags    additional CXXFLAGS (ignored when CXXFLAGS is given)
+  AR          Archiver command
+  AS          Assembler command
+  CC          C compiler command
+  CXX         C++ compiler command
+  LD          Linker command
+  NM          Symbol list command
+  OBJCOPY     Objcopy command
+  OBJDUMP     Objdump command
+  RANLIB      Ranlib command
+  STRIP       Strip command
+  CFLAGS      C compiler flags
+  LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
+              nonstandard directory <lib dir>
+  LIBS        libraries to pass to the linker, e.g. -l<library>
+  CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
+              you have headers in a nonstandard directory <include dir>
+  CXXFLAGS    C++ compiler flags
+  CPP         C preprocessor
+
+Use these variables to override the choices made by `configure' or to help
+it to find libraries and programs with nonstandard names/locations.
+
+Report bugs to the package provider.
