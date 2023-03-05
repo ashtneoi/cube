@@ -1,0 +1,17 @@
+set -eu
+
+echo "Build script arguments: $*"
+
+config="${1:?Error: no config}"
+rec="${2:?Error: no rec}"
+
+echo "Config file:"
+cat "$config"
+echo "Working directory: $PWD"
+
+staging_dir="$(sed -En 's=^staging-dir (.*)=\1=p' "$config")"
+output_dir="$(sed -En 's=^output-dir (.*)=\1=p' "$config")"
+
+echo "junk" >build.log
+echo "hi $output_dir" >hello.txt
+cp -t "$staging_dir" hello.txt "$rec.rec"
