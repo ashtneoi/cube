@@ -11,7 +11,7 @@ end
 options = {
     threads: 1,
 }
-parser = OptionParser.new("Usage: cube-build [options] RECIPE BUILD_DIR STAGING_DIR")
+parser = OptionParser.new("Usage: cube-build [options] RECIPE BUILD_DIR")
 parser.on('-t N', '--threads N', Integer) do |value|
     if value <= 0
         $stderr.puts "Error: -t/--threads value must be positive"
@@ -23,24 +23,19 @@ parser.on('-i NAME', '--impure=NAME')
 parser.on('-c', '--continue')
 parser.on('-n', '--dry-run')
 non_options = parser.permute!(into: options)
-if non_options.length != 3
+if non_options.length != 2
     $stderr.puts parser
     exit 1
 end
 non_options.map! {|s| s.scrub!}
-recipe, build_dir, staging_dir = non_options
+recipe, build_dir = non_options
 
 recipe = File.realdirpath(recipe)
 
 fatal "#{build_dir} does not exist" if not File.exist?(build_dir)
 fatal "#{build_dir} is not a directory" if not File.directory?(build_dir)
 fatal "#{build_dir} is not empty" if not options.include?(:continue) and not Dir.empty?(build_dir)
-build_dir = File.realpath(build_dir)
-
-fatal "#{staging_dir} does not exist" if not File.exist?(staging_dir)
-fatal "#{staging_dir} is not a directory" if not File.directory?(staging_dir)
-fatal "#{staging_dir} is not empty" if not options.include?(:continue) and not Dir.empty?(staging_dir)
-staging_dir = File.realpath(staging_dir)
+build_dir = File.realpath(build_dir) + "/"
 
 recipe_data = Hash.new {|h, k| raise "missing key #{k} in #{h}"}
 File.open(recipe + ".rec", "r") do |recipe_file|
@@ -66,23 +61,28 @@ if recipe_data.fetch("x", []).include?("impure")
     end
 end
 
+if recipe_data.fetch("c", []).length != 1
+    fatal "recipe file must have exactly one `c` line"
+end
+cube_dir = Pathname.new recipe_data["c"][0]
+
 if options.include?(:impure)
     if options[:impure].start_with?("/")
         fatal "package name cannot start with `/`"
     end
-    if recipe_data["c"].length != 1
-        fatal "recipe file must have exactly one `c` line"
-    end
-    output_dir = Pathname.new(recipe_data["c"][0]) + options[:impure]
+    output_dir = cube_dir + options[:impure]
 else
     fatal "pure packages aren't supported yet"
     # TODO: hash the recipe file and dir to get output_dir
 end
 
-Tempfile.create('config') do |config|
-    config.puts "staging-dir #{staging_dir}"
-    config.puts "output-dir #{output_dir}"
+Tempfile.create('config') do |config| Tempfile.create('result') do |result|
+    config.puts "output_dir #{output_dir}"
     config.puts "threads #{options[:threads]}"
+    recipe_data.fetch("i", []).each do |input|
+        input_alias, input_id = input.split(" ", 2)
+        config.puts "input #{input_alias} #{cube_dir + input_id}"
+    end
     config.flush
 
     if not options.include?(:impure)
@@ -108,14 +108,34 @@ Tempfile.create('config') do |config|
     begin
         unsetenv_others = interpreter_package_alias != "-"
         pid = Process.spawn(
-            interpreter, build_script, config.path, recipe, chdir: build_dir, pgroup: true,
+            interpreter, build_script, config.path, recipe, result.path, chdir: build_dir, pgroup: true,
             in: "/dev/null", unsetenv_others: unsetenv_others)
         _, status = Process.wait2 pid
         pid = nil
-        exit status.exitstatus
     ensure
         if pid != nil
             Process.kill("TERM", -pid)
+            puts "Waiting for build script to exit..."
+            Process.wait2 pid
         end
     end
-end
+    if status.exitstatus != 0
+        fatal "build script failed"
+    end
+
+    result_data = {}
+    result.each_line do |line|
+        line.chomp!
+        line.scrub!
+        key, value = line.split(" ", 2)
+        if result_data.include?(key)
+            fatal "result file has duplicate key #{key}"
+        end
+        result_data[key] = value
+    end
+
+    if not result_data.include?("staging_dir")
+        fatal "result file is missing the staging_dir item"
+    end
+    puts "Staging directory: #{result_data["staging_dir"]}"
+end end

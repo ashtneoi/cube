@@ -3,15 +3,27 @@ set -eu
 echo "Build script arguments: $*"
 
 config="${1:?Error: no config}"
-rec="${2:?Error: no rec}"
+recipe="${2:?Error: no recipe}"
+result="${3:?Error: no result}"
+
 
 echo "Config file:"
 cat "$config"
 echo "Working directory: $PWD"
 
-staging_dir="$(sed -En 's=^staging-dir (.*)=\1=p' "$config")"
-output_dir="$(sed -En 's=^output-dir (.*)=\1=p' "$config")"
+output_dir="$(sed -En 's=^output_dir (.*)=\1=p' "$config")"
+: ${output_dir:?Error: no output_dir}
 
+mkdir -p staging
+staging_dir="$PWD/staging"
+
+trap 'echo "oh no i am dying"; sleep 1; exit 1' SIGTERM
+
+echo "Building..."
+sleep 1
 echo "junk" >build.log
-echo "hi $output_dir" >hello.txt
-cp -t "$staging_dir" hello.txt "$rec.rec"
+echo "my prefix is $output_dir" >prefix.txt
+cp -t "$staging_dir" prefix.txt
+echo "i need aa/bbbb" >"$staging_dir/need.txt"
+echo "staging_dir $staging_dir" >"$result"
+echo "Done"

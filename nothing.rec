@@ -1,3 +1,5 @@
-c /home/maia/cube/cube/
+c /cube/
 x impure
 b - bash
+i needed aa/bbbb
+i not-needed xx/yyyy

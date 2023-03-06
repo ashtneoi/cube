@@ -1,42 +1,30 @@
 set -eu
 
-config="${1:?Error: no config}"  # configuration that impacts build process but not its final output
-rec="${2:?Error: no rec}"  # absolute path to recipe file (hello.rec)
+config="${1:?Error: no config}"
+recipe="${2:?Error: no recipe}"
+result="${3:?Error: no result}"
 
-# stage = absolute path to staging directory (DESTDIR) (ends in slash)
-stage="$(sed -En -- 's:^staging-dir (.+):\1:p' "$config")"
-: ${stage:?Error: no stage}
-[[ "$stage" == -* ]] && { echo >&2 'Error: stage looks like an option'; exit 100; }
-
-# out = absolute path to output directory (usually named after a hash of the recipe)
-out="$(sed -En -- 's:^output-dir (.+):\1:p' "$config")"
-: ${out:?Error: no out}
-
-cube="$(sed -En -- 's:^c (.+):\1:p' "$rec")"
-: ${cube:?Error: no cube}
-
-# These are relative to the cube dir.
-while IFS= read -r assignment; do
-    declare -- "$assignment"
-done < <(sed -En -- 's:^i ([^ ]+) (.*):\1=\2:p' "$rec")
-
-threads="$(sed -En -- 's:^threads (.*):\1:p' "$config")"
+output_dir="$(sed -En 's=^output_dir (.*)=\1=p' -- "$config")"
+: ${output_dir:?Error: no output-dir}
+threads="$(sed -En 's=^threads (.*)=\1=p' -- "$config")"
 : ${threads:?Error: no threads}
 
-tar -xf "${cube}$src/hello-2.12.tar.gz"
-mkdir build
-cd build
-../hello-2.12/configure --prefix="$out"
-make -j"$threads"
-make -j"$threads" install DESTDIR="${stage}_"
-# We'll end up with files in ${stage}_$out/, for reasons. Note that $out begins with a slash.
+while IFS= read -r assignment; do
+    declare -- "$assignment"
+done < <(grep -Ev '^input ' -- "$config" | sed -En 's:^([^ ]+) (.*):\1=\2:p')
 
-if [[ -e "${stage}_$out/_" ]]; then
-    # That file will clobber "${stage}_". No easy and predictable way to work around it.
-    echo >&2 "Error: '${stage}_$out/_' would clobber '${stage}_'"
-    exit 100
+while IFS= read -r assignment; do
+    declare -- "$assignment"
+done < <(sed -En 's:^input ([^ ]+) (.*):\1=\2:p' -- "$config")
+
+tar -xf "$src/hello-2.12.tar.gz"
+mkdir -p build
+mkdir -p staging
+staging_dir="$PWD/staging" # no trailing slash because output_dir already begins with one
+cd build
+if ! [[ -e config.status ]]; then
+    ../hello-2.12/configure --prefix="$output_dir"
 fi
-[[ "$stage" == -* ]] && { echo >&2 "Error: \$stage"; exit 100; }
-find "$stage/_$out/" -mindepth 1 -maxdepth 1 -exec mv -- {} "$stage" \;
-[[ -z "$stage" ]] && { echo >&2 "Error: \$stage"; exit 100; }
-rm -r -- "$stage/_"
+make -j"$threads"
+make -j"$threads" install DESTDIR="$staging_dir"
+echo "staging_dir $staging_dir$output_dir" >"$result"
