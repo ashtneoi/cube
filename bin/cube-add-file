@@ -6,15 +6,26 @@ cube="${1:?Error: no cube}"
 
 file="${2:?Error: no file}"
 
-mkdir -p -- "${cube}_tmp"
-T="$(mktemp -d -p"${cube}_tmp")"
-: ${T:?Error: no T}
-echo "Temporary directory: $T"
+if [[ -d "$file" ]]; then
+    dest="$(nar "$file" | sha3-256sum -b | base24 -p)"
+else
+    mkdir -p -- "${cube}_tmp"
+    T="$(mktemp -d -p"${cube}_tmp")"
+    : ${T:?Error: no T}
+    echo "Temporary directory: $T"
 
-cp -- "$file" "$T"
-dest="$(nar "$T" | sha3-256sum -b | base24 -p)"
+    cp -- "$file" "$T"
+    dest="$(nar "$T" | sha3-256sum -b | base24 -p)"
+fi
+
 : ${dest:?Error: no dest}
 
 mkdir -p -- "${cube}$(dirname "$dest")"
-mv -T -- "$T" "${cube}$dest"
+
+if [[ -z "${T-}" ]]; then
+    cp -RT -- "$file" "${cube}$dest"
+else
+    mv -T -- "$T" "${cube}$dest"
+fi
+
 echo "$dest"
