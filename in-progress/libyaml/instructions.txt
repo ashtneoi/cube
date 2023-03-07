@@ -7,7 +7,7 @@ make install
 
 """
 Libraries have been installed in:
-   /home/maia/cube/cube/_impure/libyaml-0.2.5/lib
+   /home/<redacted>/cube/cube/_impure/libyaml-0.2.5/lib
 
 If you ever happen to want to link against installed libraries
 in a given directory, LIBDIR, you must either use libtool, and
