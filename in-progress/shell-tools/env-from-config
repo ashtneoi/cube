@@ -1,0 +1,9 @@
+config="${1:?Error: no config}"
+
+while IFS= read -r assignment; do
+    declare -- "$assignment"
+done < <(grep -Ev '^input ' -- "$config" | sed -En 's:^([^ ]+) (.*):\1=\2:p')
+
+while IFS= read -r assignment; do
+    declare -- "$assignment"
+done < <(sed -En 's:^input ([^ ]+) (.*):\1=\2:p' -- "$config")

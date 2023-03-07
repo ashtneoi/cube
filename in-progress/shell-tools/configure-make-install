@@ -1,0 +1,18 @@
+set -eu
+
+src_tarball="${1:?Error: no src_tarball}"
+output_dir="${2:?Error: no output_dir}"
+threads="${3:?Error: no threads}"
+result="${4:?Error: no result}"
+
+tar -xf "$src_tarball"
+mkdir -p build
+mkdir -p staging
+staging_dir="$PWD/staging" # no trailing slash because output_dir already begins with one
+cd build
+if ! [[ -e config.status ]]; then
+    ../hello-2.12/configure --prefix="$output_dir"
+fi
+make -j"$threads"
+make -j"$threads" install DESTDIR="$staging_dir"
+echo "staging_dir $staging_dir$output_dir" >"$result"

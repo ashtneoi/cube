@@ -4,27 +4,8 @@ config="${1:?Error: no config}"
 recipe="${2:?Error: no recipe}"
 result="${3:?Error: no result}"
 
-output_dir="$(sed -En 's=^output_dir (.*)=\1=p' -- "$config")"
-: ${output_dir:?Error: no output-dir}
-threads="$(sed -En 's=^threads (.*)=\1=p' -- "$config")"
-: ${threads:?Error: no threads}
+shell_tools="$(sed -En 's=^input shell_tools (.*)=\1=p' -- "$config")"
 
-while IFS= read -r assignment; do
-    declare -- "$assignment"
-done < <(grep -Ev '^input ' -- "$config" | sed -En 's:^([^ ]+) (.*):\1=\2:p')
+source "$shell_tools/env-from-config" "$config"
 
-while IFS= read -r assignment; do
-    declare -- "$assignment"
-done < <(sed -En 's:^input ([^ ]+) (.*):\1=\2:p' -- "$config")
-
-tar -xf "$src/hello-2.12.tar.gz"
-mkdir -p build
-mkdir -p staging
-staging_dir="$PWD/staging" # no trailing slash because output_dir already begins with one
-cd build
-if ! [[ -e config.status ]]; then
-    ../hello-2.12/configure --prefix="$output_dir"
-fi
-make -j"$threads"
-make -j"$threads" install DESTDIR="$staging_dir"
-echo "staging_dir $staging_dir$output_dir" >"$result"
+"$SHELL" "$shell_tools/configure-make-install" "$src/hello-2.12.tar.gz" "$output_dir" "$threads" "$result"

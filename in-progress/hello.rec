@@ -1,5 +1,6 @@
 c /cube/
 x impure
 a x86-64
+i shell_tools p5/kv8shz8hjzzjdbc6wfv266xn6r57dzqtrqqfxs
 i src _impure/hello-2.12-src
 b - bash

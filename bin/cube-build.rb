@@ -79,9 +79,17 @@ end
 Tempfile.create('config') do |config| Tempfile.create('result') do |result|
     config.puts "output_dir #{output_dir}"
     config.puts "threads #{options[:threads]}"
+    inputs = {}
     recipe_data.fetch("i", []).each do |input|
         input_alias, input_id = input.split(" ", 2)
-        config.puts "input #{input_alias} #{cube_dir + input_id}"
+        if input_id.start_with?("/")
+            fatal "`i` alias cannot start with `/`"
+        end
+        config.puts "input #{input_alias} #{cube_dir + input_id}/"
+        if inputs.include?(input_alias)
+            fatal "duplicate `i` alias in recipe file"
+        end
+        inputs[input_alias] = input_id
     end
     config.flush
 
@@ -100,8 +108,10 @@ Tempfile.create('config') do |config| Tempfile.create('result') do |result|
         end
         interpreter_path = interpreter
     else
-        fatal "for now, `b` alias must be `-`"
-        # TODO: compute interpreter path
+        if not recipe_data["i"].include?(interpreter_package_alias)
+            fatal "no `i` alias matching `b` alias #{interpreter_package_alias}"
+        end
+        interpreter_path = cube + inputs[interpreter_package_alias] + interpreter
     end
 
     build_script = "#{recipe}/build"
