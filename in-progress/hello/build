@@ -5,7 +5,20 @@ recipe="${2:?Error: no recipe}"
 result="${3:?Error: no result}"
 
 shell_tools="$(sed -En 's=^input shell_tools (.*)=\1=p' -- "$config")"
-
 source "$shell_tools/env-from-config" "$config"
+# "$SHELL" "$shell_tools/configure-make-install" "$src/hello-2.12.tar.gz" hello-2.12 "$output_dir" "$threads" "$result"
 
-"$SHELL" "$shell_tools/configure-make-install" "$src/hello-2.12.tar.gz" "$output_dir" "$threads" "$result"
+src_tarball="$src/hello-2.12.tar.gz"
+src_top_dir=hello-2.12
+
+tar -xf "$src_tarball"
+mkdir -p build
+mkdir -p staging
+staging_dir="$PWD/staging" # no trailing slash because output_dir already begins with one
+cd build
+if ! [[ -e config.status ]]; then
+    bash "../$src_top_dir/configure" --prefix="$output_dir"
+fi
+make -j"$threads"
+make -j"$threads" install DESTDIR="$staging_dir"
+echo "staging_dir $staging_dir$output_dir" >"$result"
