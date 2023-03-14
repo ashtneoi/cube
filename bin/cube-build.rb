@@ -60,20 +60,22 @@ if recipe_data.fetch("x", []).include?("impure")
         fatal "this package is impure (`x impure`) and requires the -i/--impure option"
     end
 end
+# TODO: why does removing these parens cause a syntax error?
+pure = (not options.include?(:impure))
 
 if recipe_data.fetch("c", []).length != 1
     fatal "recipe file must have exactly one `c` line"
 end
 cube_dir = Pathname.new recipe_data["c"][0]
 
-if options.include?(:impure)
+if pure
+    fatal "pure packages aren't supported yet"
+    # TODO: hash the recipe file and dir to get output_dir
+else
     if options[:impure].start_with?("/")
         fatal "package name cannot start with `/`"
     end
     output_dir = cube_dir + options[:impure]
-else
-    fatal "pure packages aren't supported yet"
-    # TODO: hash the recipe file and dir to get output_dir
 end
 
 Tempfile.create('config') do |config| Tempfile.create('result') do |result|
@@ -93,7 +95,7 @@ Tempfile.create('config') do |config| Tempfile.create('result') do |result|
     end
     config.flush
 
-    if not options.include?(:impure)
+    if pure
         fatal "pure packages aren't supported yet"
         # TODO: pure packages can't use the `-` interpreter package alias
     end
@@ -116,10 +118,9 @@ Tempfile.create('config') do |config| Tempfile.create('result') do |result|
 
     build_script = "#{recipe}/build"
     begin
-        unsetenv_others = interpreter_package_alias != "-"
         pid = Process.spawn(
             interpreter, build_script, config.path, recipe, result.path, chdir: build_dir, pgroup: true,
-            in: "/dev/null", unsetenv_others: unsetenv_others)
+            in: "/dev/null", unsetenv_others: pure)
         _, status = Process.wait2 pid
         pid = nil
     ensure
